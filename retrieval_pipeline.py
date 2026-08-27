@@ -1,1 +1,1 @@
-import chromadb
+from langchain_chroma import Chroma
