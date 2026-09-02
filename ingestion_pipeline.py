@@ -1,7 +1,8 @@
 import os
+import time
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_voyageai import VoyageAIEmbeddings
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
 
@@ -27,7 +28,6 @@ def load_documents(docs_path="docs"):
     if len(documents) == 0:
         raise FileNotFoundError(f"No .txt files found in {docs_path}. Please add your company documents.")
     
-   
     for i, doc in enumerate(documents[:2]):  # Show first 2 documents
         print(f"\nDocument {i+1}:")
         print(f"  Source: {doc.metadata['source']}")
@@ -49,7 +49,6 @@ def split_documents(documents, chunk_size=1000, chunk_overlap=0):
     chunks = text_splitter.split_documents(documents)
     
     if chunks:
-    
         for i, chunk in enumerate(chunks[:5]):
             print(f"\n--- Chunk {i+1} ---")
             print(f"Source: {chunk.metadata['source']}")
@@ -63,28 +62,51 @@ def split_documents(documents, chunk_size=1000, chunk_overlap=0):
     
     return chunks
 
-def create_vector_store(chunks, persist_directory="db/chroma_db"):
-    """Create and persist ChromaDB vector store"""
-    print("Creating embeddings and storing in ChromaDB...")
+def create_vector_store(chunks, persist_directory="db/chroma_db", batch_size=20, delay_seconds=20):
+    """Create and persist ChromaDB vector store using Voyage AI embeddings with batching and retry handling"""
+    print("Creating embeddings with Voyage AI and storing in ChromaDB...")
         
-    embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
+    embedding_model = VoyageAIEmbeddings(model="voyage-3")
     
-    # Create ChromaDB vector store
-    print("--- Creating vector store ---")
-    vectorstore = Chroma.from_documents(
-        documents=chunks,
-        embedding=embedding_model,
-        persist_directory=persist_directory, 
+    vectorstore = Chroma(
+        persist_directory=persist_directory,
+        embedding_function=embedding_model,
         collection_metadata={"hnsw:space": "cosine"}
     )
-    print("--- Finished creating vector store ---")
     
+    total_chunks = len(chunks)
+    print(f"--- Ingesting {total_chunks} chunks in batches of {batch_size} ---")
+    
+    for i in range(0, total_chunks, batch_size):
+        batch = chunks[i:i + batch_size]
+        batch_num = (i // batch_size) + 1
+        total_batches = (total_chunks + batch_size - 1) // batch_size
+        print(f"Processing batch {batch_num}/{total_batches} (chunks {i+1} to {min(i+batch_size, total_chunks)})...")
+        
+        retries = 5
+        while retries > 0:
+            try:
+                vectorstore.add_documents(batch)
+                break
+            except Exception as e:
+                print(f"⚠️ Rate limit or error encountered: {e}")
+                retries -= 1
+                if retries == 0:
+                    raise e
+                wait_time = 30
+                print(f"Retrying in {wait_time}s... ({retries} retries left)")
+                time.sleep(wait_time)
+        
+        if i + batch_size < total_chunks and delay_seconds > 0:
+            time.sleep(delay_seconds)
+            
+    print(f"--- Finished creating vector store ---")
     print(f"Vector store created and saved to {persist_directory}")
     return vectorstore
 
 def main():
     """Main ingestion pipeline"""
-    print("=== RAG Document Ingestion Pipeline ===\n")
+    print("=== RAG Document Ingestion Pipeline (Voyage AI) ===\n")
     
     # Define paths
     docs_path = "docs"
@@ -92,9 +114,9 @@ def main():
     
     # Check if vector store already exists
     if os.path.exists(persistent_directory):
-        print("✅ Vector store already exists. No need to re-process documents.")
+        print("✅ Vector store already exists. Loading existing vector store...")
         
-        embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
+        embedding_model = VoyageAIEmbeddings(model="voyage-3")
         vectorstore = Chroma(
             persist_directory=persistent_directory,
             embedding_function=embedding_model, 
@@ -111,39 +133,11 @@ def main():
     # Step 2: Split into chunks
     chunks = split_documents(documents)
     
-    # # Step 3: Create vector store
+    # Step 3: Create vector store
     vectorstore = create_vector_store(chunks, persistent_directory)
     
-    print("\n✅ Ingestion complete! Your documents are now ready for RAG queries.")
+    print("\n✅ Ingestion complete! Your documents are now ready for queries.")
     return vectorstore
 
 if __name__ == "__main__":
     main()
-
-
-
-
-# documents = [
-#    Document(
-#        page_content="Google LLC is an American multinational corporation and technology company focusing on online advertising, search engine technology, cloud computing, computer software, quantum computing, e-commerce, consumer electronics, and artificial intelligence (AI).",
-#        metadata={'source': 'docs/google.txt'}
-#    ),
-#    Document(
-#        page_content="Microsoft Corporation is an American multinational corporation and technology conglomerate headquartered in Redmond, Washington.",
-#        metadata={'source': 'docs/microsoft.txt'}
-#    ),
-#    Document(
-#        page_content="Nvidia Corporation is an American technology company headquartered in Santa Clara, California.",
-#        metadata={'source': 'docs/nvidia.txt'}
-#    ),
-#    Document(
-#        page_content="Space Exploration Technologies Corp., commonly referred to as SpaceX, is an American space technology company headquartered at the Starbase development site in Starbase, Texas.",
-#        metadata={'source': 'docs/spacex.txt'}
-#    ),
-#    Document(
-#        page_content="Tesla, Inc. is an American multinational automotive and clean energy company headquartered in Austin, Texas.",
-#        metadata={'source': 'docs/tesla.txt'}
-#    )
-# ]
-##
-

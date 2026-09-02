@@ -26,3 +26,6 @@ build/
 .DS_Store
 .vscode/
 .idea/
+
+# Local uploaded files & extracted assets
+uploads/
