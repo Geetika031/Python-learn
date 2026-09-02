@@ -45,6 +45,19 @@ def sanitize_key(key: Optional[str]) -> Optional[str]:
     return cleaned if cleaned else None
 
 
+def get_config_value(key: str, default: Optional[str] = None) -> Optional[str]:
+    """Retrieve configuration or secret from os.environ or st.secrets."""
+    val = os.getenv(key)
+    if not val:
+        try:
+            if hasattr(st, "secrets") and key in st.secrets:
+                val = st.secrets[key]
+        except Exception:
+            pass
+    sanitized = sanitize_key(val)
+    return sanitized if sanitized is not None else default
+
+
 # ------------------------------------------------------------------------------
 # Asset Extraction: Extract Embedded Images & Page Snapshots
 # ------------------------------------------------------------------------------
@@ -234,13 +247,13 @@ def process_pdf_with_unstructured(
 # ------------------------------------------------------------------------------
 # Qdrant Vector DB & Embeddings Helper Functions
 # ------------------------------------------------------------------------------
-def get_qdrant_client(url: str, api_key: Optional[str] = None) -> QdrantClient:
+def get_qdrant_client(url: Optional[str] = None, api_key: Optional[str] = None) -> QdrantClient:
     """Initialize and validate Qdrant client connection."""
-    if not url:
-        raise ValueError("Qdrant URL must be provided in .env (QDRANT_URL).")
+    clean_url = (url or get_config_value("QDRANT_URL") or "").strip().rstrip("/")
+    if not clean_url:
+        raise ValueError("QDRANT_URL is not set. Please add it to your Streamlit Secrets or .env file.")
     
-    clean_url = url.strip().rstrip("/")
-    clean_key = sanitize_key(api_key) or sanitize_key(os.getenv("QDRANT_API_KEY"))
+    clean_key = sanitize_key(api_key) or get_config_value("QDRANT_API_KEY")
     
     client = QdrantClient(
         url=clean_url,
@@ -572,17 +585,17 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # Read credentials & configuration parameters securely from .env
-    gemini_api_key = sanitize_key(os.getenv("GEMINI_API_KEY")) or sanitize_key(os.getenv("GOOGLE_API_KEY"))
-    qdrant_url = (os.getenv("QDRANT_URL") or "http://localhost:6333").strip().rstrip("/")
-    qdrant_api_key = sanitize_key(os.getenv("QDRANT_API_KEY"))
-    collection_name = (os.getenv("QDRANT_COLLECTION_NAME") or "pdf_rag_collection").strip()
+    # Read credentials & configuration parameters securely from st.secrets or .env
+    gemini_api_key = get_config_value("GEMINI_API_KEY") or get_config_value("GOOGLE_API_KEY")
+    qdrant_url = get_config_value("QDRANT_URL")
+    qdrant_api_key = get_config_value("QDRANT_API_KEY")
+    collection_name = get_config_value("QDRANT_COLLECTION_NAME", "pdf_rag_collection")
 
-    # Model & Retrieval Defaults (read from .env or optimized defaults)
-    embedding_model = os.getenv("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
-    model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
-    top_k = int(os.getenv("TOP_K_CHUNKS", "6"))
-    chunk_size = int(os.getenv("CHUNK_SIZE", "1000"))
+    # Model & Retrieval Defaults (read from secrets / .env or optimized defaults)
+    embedding_model = get_config_value("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
+    model_name = get_config_value("GEMINI_MODEL", "gemini-3.6-flash")
+    top_k = int(get_config_value("TOP_K_CHUNKS", "6"))
+    chunk_size = int(get_config_value("CHUNK_SIZE", "1000"))
 
     # Session State Initialization
     if "messages" not in st.session_state:
@@ -624,6 +637,8 @@ def main():
                         st.rerun()
             except Exception as e:
                 st.error(f"🔴 Database Connection Notice: {e}")
+        else:
+            st.warning("⚠️ **QDRANT_URL** not configured. Please add it to Secrets / `.env`.")
 
         st.markdown("---")
         st.markdown("""
