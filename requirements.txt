@@ -1,12 +1,22 @@
+# Streamlit Frontend Web App
 streamlit>=1.35.0
+
+# PDF & Document Processing (Text, Tables, Images)
 unstructured[pdf]>=0.14.0
-qdrant-client>=1.10.0
-langchain-google-genai>=2.0.0
-google-generativeai>=0.8.0
-langchain>=0.3.0
-langchain-community>=0.3.0
-langchain-qdrant>=0.2.0
-python-dotenv>=1.0.0
 pypdf>=4.0.0
 pypdfium2>=4.30.0
 pi-heif<1.0.0
+
+# Vector Database (Qdrant)
+qdrant-client>=1.10.0
+langchain-qdrant>=0.2.0
+
+# AI & LLM (Google Gemini & LangChain)
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-google-genai>=2.0.0
+google-generativeai>=0.8.0
+
+# Environment Variables
+python-dotenv>=1.0.0
