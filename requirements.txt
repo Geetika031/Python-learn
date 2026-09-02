@@ -1,18 +1,17 @@
-# Frontend Web App
+# Streamlit Frontend Web App
 streamlit==1.50.0
 
-# AI & LLM Engine (Clean direct dependencies)
+# AI & LLM Engine
 langchain-core==0.3.86
 langchain-google-genai==2.0.10
 langchain-qdrant==0.2.1
 qdrant-client==1.16.1
 
-# PDF, Table & Image Processing
+# PDF, Table & Multi-Modal Document Processing
 unstructured==0.18.3
-pdfminer.six==20251107
+pdfminer.six>=20231228
 pypdf==6.16.2
 pypdfium2==5.13.0
-pi-heif==0.22.0
 
 # Environment Variables
 python-dotenv==1.2.1
