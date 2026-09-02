@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <linearGradient id="cardGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="620" fill="url(#bgGrad)" rx="16" />
+
+  <!-- Header -->
+  <text x="500" y="45" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="bold" fill="url(#primaryGrad)" text-anchor="middle">
+    Multi-Modal PDF RAG System Architecture
+  </text>
+  <text x="500" y="70" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" fill="#94A3B8" text-anchor="middle">
+    Streamlit • Unstructured PDF Parsing • Gemini Embeddings (3072 dims) • Qdrant Vector DB • Gemini 3.6 Flash
+  </text>
+
+  <!-- COLUMN 1: INGESTION -->
+  <g transform="translate(40, 100)">
+    <!-- Container Box -->
+    <rect width="270" height="470" rx="12" fill="url(#cardGrad1)" stroke="#475569" stroke-width="1.5" filter="url(#shadow)" />
+    <rect width="270" height="38" rx="12" fill="#334155" />
+    <text x="135" y="24" font-family="sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC" text-anchor="middle">
+      1. INGESTION &amp; PARSING
+    </text>
+
+    <!-- Node 1: PDF Upload -->
+    <rect x="15" y="55" width="240" height="70" rx="8" fill="#0F172A" stroke="#6366F1" stroke-width="1.2" />
+    <text x="25" y="78" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">📄 PDF Document Upload</text>
+    <text x="25" y="98" font-family="sans-serif" font-size="11" fill="#94A3B8">Saves PDF into local uploads/ directory</text>
+    <text x="25" y="113" font-family="sans-serif" font-size="10" fill="#38BDF8">Streamlit File Uploader</text>
+
+    <!-- Node 2: Multi-Modal Extraction -->
+    <rect x="15" y="145" width="240" height="90" rx="8" fill="#0F172A" stroke="#3B82F6" stroke-width="1.2" />
+    <text x="25" y="168" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">🖼️ Visual Asset Extractor</text>
+    <text x="25" y="188" font-family="sans-serif" font-size="11" fill="#94A3B8">• Embedded figures &amp; charts (PyPDF)</text>
+    <text x="25" y="204" font-family="sans-serif" font-size="11" fill="#94A3B8">• High-res page snapshots (PyPDFium2)</text>
+    <text x="25" y="222" font-family="sans-serif" font-size="10" fill="#38BDF8">Saved to uploads/extracted_assets/</text>
+
+    <!-- Node 3: Unstructured Table & Text Parser -->
+    <rect x="15" y="255" width="240" height="90" rx="8" fill="#0F172A" stroke="#06B6D4" stroke-width="1.2" />
+    <text x="25" y="278" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">📊 Unstructured Parser</text>
+    <text x="25" y="298" font-family="sans-serif" font-size="11" fill="#94A3B8">• Structure-aware Table Inference</text>
+    <text x="25" y="314" font-family="sans-serif" font-size="11" fill="#94A3B8">• Captures HTML Table &amp; Page Metadata</text>
+    <text x="25" y="332" font-family="sans-serif" font-size="10" fill="#38BDF8">unstructured.partition.pdf</text>
+
+    <!-- Node 4: Chunk Formatter -->
+    <rect x="15" y="365" width="240" height="85" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1.2" />
+    <text x="25" y="388" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">🧱 Chunk &amp; Metadata Pack</text>
+    <text x="25" y="408" font-family="sans-serif" font-size="11" fill="#94A3B8">• Links Text, Table HTML &amp; Image Paths</text>
+    <text x="25" y="424" font-family="sans-serif" font-size="11" fill="#94A3B8">• Adds source, page &amp; type payloads</text>
+    <text x="25" y="440" font-family="sans-serif" font-size="10" fill="#34D399">LangChain Document Objects</text>
+  </g>
+
+  <!-- COLUMN 2: VECTOR EMBEDDINGS & DB -->
+  <g transform="translate(365, 100)">
+    <!-- Container Box -->
+    <rect width="270" height="470" rx="12" fill="url(#cardGrad1)" stroke="#475569" stroke-width="1.5" filter="url(#shadow)" />
+    <rect width="270" height="38" rx="12" fill="#334155" />
+    <text x="135" y="24" font-family="sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC" text-anchor="middle">
+      2. EMBEDDINGS &amp; QDRANT DB
+    </text>
+
+    <!-- Node 1: Gemini Embeddings -->
+    <rect x="15" y="55" width="240" height="110" rx="8" fill="#0F172A" stroke="#8B5CF6" stroke-width="1.2" />
+    <text x="25" y="78" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">🧠 Google Gemini Embeddings</text>
+    <text x="25" y="98" font-family="sans-serif" font-size="11" fill="#94A3B8">Model: models/gemini-embedding-001</text>
+    <text x="25" y="114" font-family="sans-serif" font-size="11" fill="#94A3B8">Vector Dimensions: 3,072</text>
+    <text x="25" y="130" font-family="sans-serif" font-size="11" fill="#94A3B8">Dense semantic space representation</text>
+    <text x="25" y="148" font-family="sans-serif" font-size="10" fill="#C084FC">langchain-google-genai</text>
+
+    <!-- Node 2: Qdrant Cloud Storage -->
+    <rect x="15" y="185" width="240" height="160" rx="8" fill="#0F172A" stroke="#EC4899" stroke-width="1.2" />
+    <text x="25" y="208" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">🗄️ Qdrant Cloud Vector DB</text>
+    <text x="25" y="228" font-family="sans-serif" font-size="11" fill="#94A3B8">• Remote Cloud Cluster</text>
+    <text x="25" y="244" font-family="sans-serif" font-size="11" fill="#94A3B8">• Cosine Distance Similarity</text>
+    <text x="25" y="260" font-family="sans-serif" font-size="11" fill="#94A3B8">• Payload Index on metadata.source</text>
+    <text x="25" y="276" font-family="sans-serif" font-size="11" fill="#94A3B8">• Stores full payloads (tables/images)</text>
+    <text x="25" y="294" font-family="sans-serif" font-size="10" fill="#F472B6">Collection: Geetika-rag-project</text>
+    <text x="25" y="325" font-family="sans-serif" font-size="11" font-weight="bold" fill="#A7F3D0">⚡ High-Speed ANN Search</text>
+
+    <!-- Node 3: Scope Filtering -->
+    <rect x="15" y="365" width="240" height="85" rx="8" fill="#0F172A" stroke="#F59E0B" stroke-width="1.2" />
+    <text x="25" y="388" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">🎯 Metadata Filtering</text>
+    <text x="25" y="408" font-family="sans-serif" font-size="11" fill="#94A3B8">• Global search (all uploaded PDFs)</text>
+    <text x="25" y="424" font-family="sans-serif" font-size="11" fill="#94A3B8">• Single document targeted search</text>
+    <text x="25" y="440" font-family="sans-serif" font-size="10" fill="#FCD34D">qmodels.Filter(FieldCondition)</text>
+  </g>
+
+  <!-- COLUMN 3: RETRIEVAL & LLM QA -->
+  <g transform="translate(690, 100)">
+    <!-- Container Box -->
+    <rect width="270" height="470" rx="12" fill="url(#cardGrad1)" stroke="#475569" stroke-width="1.5" filter="url(#shadow)" />
+    <rect width="270" height="38" rx="12" fill="#334155" />
+    <text x="135" y="24" font-family="sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC" text-anchor="middle">
+      3. RETRIEVAL &amp; SYNTHESIS
+    </text>
+
+    <!-- Node 1: User Query -->
+    <rect x="15" y="55" width="240" height="75" rx="8" fill="#0F172A" stroke="#38BDF8" stroke-width="1.2" />
+    <text x="25" y="78" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">💬 Chat &amp; User Question</text>
+    <text x="25" y="98" font-family="sans-serif" font-size="11" fill="#94A3B8">User asks questions on text/tables/figs</text>
+    <text x="25" y="115" font-family="sans-serif" font-size="10" fill="#38BDF8">Streamlit Chat Interface</text>
+
+    <!-- Node 2: Prompt Grounding Engine -->
+    <rect x="15" y="145" width="240" height="95" rx="8" fill="#0F172A" stroke="#6366F1" stroke-width="1.2" />
+    <text x="25" y="168" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">📝 Strict Grounding Engine</text>
+    <text x="25" y="188" font-family="sans-serif" font-size="11" fill="#94A3B8">• Context injection with source badges</text>
+    <text x="25" y="204" font-family="sans-serif" font-size="11" fill="#94A3B8">• Mandates Markdown Table format</text>
+    <text x="25" y="222" font-family="sans-serif" font-size="10" fill="#818CF8">ChatPromptTemplate | StrOutputParser</text>
+
+    <!-- Node 3: Gemini LLM -->
+    <rect x="15" y="255" width="240" height="95" rx="8" fill="#0F172A" stroke="#A855F7" stroke-width="1.2" />
+    <text x="25" y="278" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">✨ Google Gemini LLM</text>
+    <text x="25" y="298" font-family="sans-serif" font-size="11" fill="#94A3B8">Model: gemini-3.6-flash</text>
+    <text x="25" y="314" font-family="sans-serif" font-size="11" fill="#94A3B8">Synthesizes answers &amp; markdown tables</text>
+    <text x="25" y="332" font-family="sans-serif" font-size="10" fill="#C084FC">ChatGoogleGenerativeAI</text>
+
+    <!-- Node 4: Streamlit Multi-Modal Output -->
+    <rect x="15" y="365" width="240" height="85" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1.2" />
+    <text x="25" y="388" font-family="sans-serif" font-size="13" font-weight="bold" fill="#E2E8F0">🖥️ Multi-Modal Output</text>
+    <text x="25" y="408" font-family="sans-serif" font-size="11" fill="#94A3B8">• Formatted Markdown Answer &amp; Tables</text>
+    <text x="25" y="424" font-family="sans-serif" font-size="11" fill="#94A3B8">• Rendered Images &amp; Page Citations</text>
+    <text x="25" y="440" font-family="sans-serif" font-size="10" fill="#34D399">st.chat_message + st.image + st.expander</text>
+  </g>
+
+  <!-- Connectors / Arrows -->
+  <path d="M 310 250 L 365 250" stroke="#06B6D4" stroke-width="2.5" marker-end="url(#arrow)" fill="none" stroke-dasharray="4,4" />
+  <path d="M 635 250 L 690 250" stroke="#A855F7" stroke-width="2.5" marker-end="url(#arrow)" fill="none" stroke-dasharray="4,4" />
+</svg>
