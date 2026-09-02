@@ -114,6 +114,28 @@ def extract_pdf_assets(file_path: str) -> Dict[int, List[str]]:
     return extracted_images
 
 
+def split_text_into_chunks(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> List[str]:
+    """Robust zero-dependency character chunking with overlap."""
+    if not text:
+        return []
+    chunks = []
+    start = 0
+    text_len = len(text)
+    while start < text_len:
+        end = start + chunk_size
+        chunk = text[start:end]
+        if end < text_len:
+            last_space = chunk.rfind("\n")
+            if last_space == -1:
+                last_space = chunk.rfind(" ")
+            if last_space > chunk_size // 2:
+                chunk = chunk[:last_space]
+                end = start + last_space + 1
+        chunks.append(chunk.strip())
+        start = max(end - chunk_overlap, start + 1)
+    return [c for c in chunks if c]
+
+
 # ------------------------------------------------------------------------------
 # Helper Functions: PDF Parsing & Table Extraction with Unstructured
 # ------------------------------------------------------------------------------
@@ -206,37 +228,29 @@ def process_pdf_with_unstructured(
     if not documents:
         try:
             from pypdf import PdfReader
-            from langchain_text_splitters import RecursiveCharacterTextSplitter
             
             reader = PdfReader(file_path)
-            raw_docs = []
-            for page_idx, page in enumerate(reader.pages):
-                text = page.extract_text() or ""
-                if text.strip():
-                    raw_docs.append(Document(
-                        page_content=text.strip(),
+            for page_idx, page in enumerate(reader.pages, start=1):
+                text = (page.extract_text() or "").strip()
+                if not text:
+                    continue
+                
+                page_chunks = split_text_into_chunks(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+                for chunk_text in page_chunks:
+                    doc = Document(
+                        page_content=chunk_text,
                         metadata={
                             "source": file_name,
                             "file_path": str(file_path),
-                            "page": page_idx + 1,
-                            "parser": "pypdf",
+                            "page": page_idx,
+                            "chunk_id": len(documents) + 1,
+                            "char_count": len(chunk_text),
+                            "parser": "pypdf_fallback",
                             "is_table": False,
                             "table_html": "",
-                            "images": page_assets.get(page_idx + 1, [])
+                            "images": page_assets.get(page_idx, [])
                         }
-                    ))
-            
-            if raw_docs:
-                splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=chunk_size,
-                    chunk_overlap=chunk_overlap,
-                    separators=["\n\n", "\n", ". ", " ", ""]
-                )
-                split_docs = splitter.split_documents(raw_docs)
-                for idx, doc in enumerate(split_docs):
-                    doc.metadata["chunk_id"] = idx + 1
-                    doc.metadata["char_count"] = len(doc.page_content)
-                    doc.metadata["images"] = page_assets.get(doc.metadata["page"], [])
+                    )
                     documents.append(doc)
         except Exception as e:
             raise RuntimeError(f"Failed to parse PDF file '{file_name}': {e}")

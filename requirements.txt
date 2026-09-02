@@ -5,6 +5,7 @@ streamlit==1.50.0
 langchain-core==0.3.86
 langchain-google-genai==2.0.10
 langchain-qdrant==0.2.1
+langchain-text-splitters==0.3.11
 qdrant-client==1.16.1
 
 # PDF, Table & Multi-Modal Document Processing
