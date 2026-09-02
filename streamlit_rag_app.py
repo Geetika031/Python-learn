@@ -458,10 +458,11 @@ def generate_rag_response(
         source = doc.metadata.get("source", "Unknown Document")
         page = doc.metadata.get("page", 1)
         is_table = doc.metadata.get("is_table", False)
+        table_html = doc.metadata.get("table_html", "")
         
-        type_badge = " [TYPE: TABLE]" if is_table else ""
+        table_repr = f"\n[Table HTML Structure]:\n{table_html}" if (table_html and table_html not in doc.page_content) else ""
         context_blocks.append(
-            f"[Source {idx} | File: {source} | Page: {page}{type_badge} | Similarity Score: {score:.4f}]\n{doc.page_content.strip()}"
+            f"=== Document Excerpt {idx} (File: {source} | Page: {page}) ===\n{doc.page_content.strip()}{table_repr}"
         )
         
         doc_images = doc.metadata.get("images", [])
@@ -476,19 +477,22 @@ def generate_rag_response(
                         "score": score
                     })
     
-    formatted_context = "\n\n---\n\n".join(context_blocks)
+    formatted_context = "\n\n--------------------\n\n".join(context_blocks)
     
-    prompt_template = ChatPromptTemplate.from_template("""You are an intelligent, precise AI assistant analyzing uploaded PDF documents that may contain text, tables, metrics, and figures.
+    prompt_template = ChatPromptTemplate.from_template("""You are an intelligent, highly helpful AI document assistant analyzing content extracted from PDF documents (including text, data tables, metrics, bullet points, and figures).
 
-CRITICAL INSTRUCTIONS:
-1. Answer the user's question relying strictly and factually on the provided Context below.
-2. IF THE ANSWER INVOLVES TABULAR DATA, METRICS, COMPARISONS, OR LISTS:
-   - Format the information cleanly into a structured Markdown Table (`| Column 1 | Column 2 | ...`) with clear headers and aligned rows.
-3. If the context contains specific page numbers or references, cite them accurately (e.g., "[Page 2]").
-4. If the context does not contain enough information to answer the question, clearly state:
+Your goal is to answer the user's question accurately, thoroughly, and factually based on the provided Context.
+
+GUIDELINES:
+1. Carefully analyze all the provided Document Excerpts below. Extract all relevant facts, numbers, metrics, explanations, or data points that address the user's question.
+2. IF THE ANSWER INVOLVES TABULAR DATA, METRICS, COMPARISONS, OR STRUCTURED VALUES:
+   - Synthesize and present the information in a clean, beautifully formatted Markdown Table (`| Column 1 | Column 2 | ...`) with clear headers and aligned rows.
+3. Cite the relevant source file and page numbers when stating facts (e.g., "[Page 1]").
+4. Be comprehensive and direct: Even if the information is presented in tables, lists, or headers, interpret and explain it clearly to answer the user's question.
+5. Only if the provided context contains absolutely no relevant information to answer the question, state:
    "Based on the provided PDF documents, I could not find information to answer this question."
 
-Context from Document(s):
+Context:
 {context}
 
 User Question:
@@ -577,7 +581,7 @@ def main():
     # Model & Retrieval Defaults (read from .env or optimized defaults)
     embedding_model = os.getenv("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
     model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
-    top_k = int(os.getenv("TOP_K_CHUNKS", "4"))
+    top_k = int(os.getenv("TOP_K_CHUNKS", "6"))
     chunk_size = int(os.getenv("CHUNK_SIZE", "1000"))
 
     # Session State Initialization
