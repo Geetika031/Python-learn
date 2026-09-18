@@ -470,7 +470,8 @@ def generate_rag_response(
     retrieved_results = vectorstore.similarity_search_with_score(
         query,
         k=k,
-        filter=filter_obj
+        filter=filter_obj,
+        score_threshold=score_threshold  # 👈 Add this line
     )
     
     if not retrieved_results:
