@@ -445,7 +445,7 @@ def generate_rag_response(
     gemini_api_key: str,
     model_name: str = "gemini-3.6-flash",
     k: int = 4,
-    score_threshold = 0.7,
+    score_threshold = 0.6,
     doc_filter: Optional[str] = None
 ) -> Tuple[str, List[Tuple[Document, float]], List[Dict]]:
     """
